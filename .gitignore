@@ -30,3 +30,57 @@
 *.exe
 *.out
 *.app
+
+
+## 기본 빌드 관련
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.log
+*.tlog
+*.idb
+*.dll
+*.lib
+*.sbr
+
+## Visual Studio 관련
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+*.ipch/
+
+## 빌드 폴더
+Debug/
+Release/
+x64/
+x86/
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+
+## 임시/캐시 파일
+*.cache
+*.ncb
+*.aps
+*.opensdf
+*.sdf
+
+## 기타
+*.class
+*.psess
+*.vsp
+*.vspscc
+*.vssscc
+*.dbmdl
+*.bak
+*.orig
+
+# Mac/Windows 숨김파일
+.DS_Store
+Thumbs.db
+ehthumbs.db

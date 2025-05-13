@@ -3,8 +3,6 @@
 #include <string>
 #include <memory>
 #include <array>
-#include <print>
-#include <ranges>
 #include <algorithm>
 #include <numeric>
 #include <unordered_map>	
@@ -40,7 +38,12 @@ public:
 	}
 
 	void show() const {
-		std::println("이름:{:>15}, 아이디:{:20}, 점수:{:20}, 자원수:{:20}\n저장된 글자:{}\n", name, id, score, num, p.get());
+		std::cout << "이름: " << name
+			<< ", 아이디: " << id
+			<< ", 점수: " << score
+			<< ", 자원수: " << num
+			<< "\n저장된 글자: " << p.get() << "\n" << std::endl;
+
 	}
 
 	void read(std::istream& is) {
@@ -56,6 +59,9 @@ public:
 };
 
 std::array<Player, 250'0000> players;
+std::array<const Player*, 250'0000> sortedById;
+std::array<const Player*, 250'0000> sortedByName;
+std::array<const Player*, 250'0000> sortedByScore;
 
 int main()
 {
@@ -73,14 +79,16 @@ int main()
 			player.read(in);
 		}
 
-		std::println("제일 마지막 Player의 정보");
+		std::cout << "제일 마지막 Player의 정보\n";
 		players.back().show();
 	}
 	
 	/*2. 점수가 가장 큰 Player를 찾아 화면에 출력하라.*/
 	{
-		std::println("점수가 가장 큰 Player를 찾아 화면에 출력");
-		(*std::max_element(players.begin(), players.end())).show();
+		std::cout << "점수가 가장 큰 Player를 찾아 화면에 출력\n";
+		(*std::max_element(players.begin(), players.end(), [](const Player& p1, const Player& p2) {
+			return p1.getScore() < p2.getScore();
+		})).show();
 
 		/*Player의 평균 점수를 계산하여 화면에 출력하라.*/
 		std::cout << "평균 점수: " << std::accumulate(players.begin(), players.end(), 0LL,
@@ -92,7 +100,7 @@ int main()
 	/*3. id가 서로 같은 객체를 찾아 "같은아이디.txt"에 기록하라.
 		id가 같은 객체는 모두 몇 개인지 화면에 출력하라.
 		파일에는 id가 같은 Player 객체의 이름과 아이디를 한 줄 씩 기록한다.*/
-	std::unordered_map<size_t, std::vector<const Player*>> idMap;
+	/*std::unordered_map<size_t, std::vector<const Player*>> idMap;
 
 	for (const Player& player : players) {
 		idMap[player.getId()].push_back(&player);
@@ -109,42 +117,35 @@ int main()
 			}
 		}
 	}
-	std::println("\nid가 중복된 Player는 총 {}명입니다.", count);
+	std::cout << "\nid가 중복된 Player는 총 " << count << "명입니다.\n";*/
 
 	/*4. Player의 멤버 p가 가리키는 메모리에는 파일에서 읽은 num개의 char가
 		저장되어 있어야 한다
 		메모리에 저장된 char를 오름차순으로 정렬하라.
 		'a'가 10글자 이상인 Player의 개수를 화면에 출력하라.*/
 	{
-		int a10PlayerCount{};
+		//int a10PlayerCount{};
 
-		for (Player& player : players) {
-			char* p = player.getP();
-			size_t num = player.getNum();
-			std::sort(p, p + num);
+		//for (Player& p : players) {
+		//	std::sort(p.getP(), p.getP() + p.getNum());
 
-			// a 개수 세기
-			int aCount = std::count(p, p + num, 'a');
-			if (aCount >= 10) {
-				++a10PlayerCount;
-			}
-		}
+		//	// a 개수 세기
+		//	int aCount = std::count(p.getP(), p.getP() + p.getNum(), 'a');
+		//	if (aCount >= 10) {
+		//		++a10PlayerCount;
+		//	}
+		//}
 
-		std::println("\n'a'가 10개 이상인 Player는 {}명입니다.", a10PlayerCount);
+		//std::cout << "\n'a'가 10개 이상인 Player는 " << a10PlayerCount << "명입니다.\n";
 	}
 
 
 	// 5. [ LOOP ] id를 입력받아 존재하는 id라면 다음 내용을 한 번에 화면 출력하라.
-	std::vector<const Player*> sortedById;
-	std::vector<const Player*> sortedByName;
-	std::vector<const Player*> sortedByScore;
-
-	for (const Player& p : players) {
-		sortedById.push_back(&p);
-		sortedByName.push_back(&p);
-		sortedByScore.push_back(&p);
+	for (size_t i = 0; i < players.size(); ++i) {
+		sortedById[i] = &players[i];
+		sortedByName[i] = &players[i];
+		sortedByScore[i] = &players[i];
 	}
-
 
 	std::sort(sortedById.begin(), sortedById.end(), [](const Player* a, const Player* b) {
 		return a->getId() < b->getId();
@@ -158,9 +159,8 @@ int main()
 		return a->getScore() < b->getScore();
 	});
 
-
 	while (true) {
-		std::print("\n확인할 id를 입력하세요 (종료는 0): ");
+		std::cout << "\n확인할 id를 입력하세요 (종료는 0): ";
 		size_t inputId;
 		std::cin >> inputId;
 
@@ -169,46 +169,112 @@ int main()
 		/*Player를 id 기준 오름차순으로 정렬하였을 때
 		해당 id 포함 앞과 뒤 Player의 정보를 출력한다.
 		id가 같은 Player가 둘 이상이면 이들의 정보를 모두 출력하여야 한다.*/
-		std::println("Player를 id 기준 오름차순으로 정렬하였을 때\n");
+		std::cout << "Player를 id 기준 오름차순으로 정렬하였을 때\n";
 
-		auto it = std::ranges::lower_bound(
-			sortedById, inputId,
-			{},  // projection 생략
-			[](const Player* p) { return p->getId(); }
-		);
+		auto lower = std::lower_bound(sortedById.begin(), sortedById.end(), inputId,
+			[](const Player* p, size_t id) {
+			return p->getId() < id;
+		});
 
-		if (idMap[inputId].size() >= 2) {
-			for (const auto& id : idMap[inputId]) {
-				id->show();
-			}
+		auto upper = std::upper_bound(sortedById.begin(), sortedById.end(), inputId,
+			[](size_t id, const Player* p) {
+			return id < p->getId();
+		});
+
+		if (lower == upper) {
+			std::cout << "해당 ID를 가진 Player가 없습니다.\n";
+			continue;
 		}
-		else if (it != sortedById.end() and (*it)->getId() == inputId) {
-			if (it != sortedById.begin()) {
-				std::println("\n[앞의 Player]");
-				(*(it - 1))->show();
-			}
 
-			std::println("\n[해당 Player]");
-			(*it)->show();
-
-			if ((it + 1) != sortedById.end()) {
-				std::println("\n[뒤의 Player]");
-				(*(it + 1))->show();
-			}
+		std::cout << "\n[ID 기준 정렬 시 같은 ID Player들]\n";
+		for (auto it = lower; it != upper; ++it) {
+			(*it)->show();  // 각 Player 객체의 정보를 출력
 		}
-		else {
-			std::println("해당 ID를 가진 Player를 찾을 수 없습니다.");
+
+		// 앞 Player
+		if (lower != sortedById.begin()) {
+			std::cout << "\n[앞 Player]\n";
+			(*(lower - 1))->show();  // lower의 바로 앞 Player 정보 출력
+		}
+
+		// 뒤 Player
+		if (upper != sortedById.end()) {
+			std::cout << "\n[뒤 Player]\n";
+			(*upper)->show();  // upper가 가리키는 Player 정보 출력
 		}
 
 		/*Player를 name 기준 오름차순으로 정렬하였을 때
 		해당 name 포함 앞과 뒤 Player의 정보를 출력한다.
 		같은 name이 여럿일 경우 바로 앞뒤 한명의 Player 정보만 출력하면 된다.*/
-		std::println("Player를 name 기준 오름차순으로 정렬하였을 때\n");
+		std::cout << "Player를 name 기준 오름차순으로 정렬하였을 때\n";
 		
+		auto lowerName = std::lower_bound(sortedByName.begin(), sortedByName.end(), inputId,
+			[](const Player* p, size_t id) {
+			return p->getName() < id;  // 이름 기준으로 비교
+		});
+
+		auto upperName = std::upper_bound(sortedByName.begin(), sortedByName.end(), inputId,
+			[](size_t id, const Player* p) {
+			return id < p->getName();  // 이름 기준으로 비교
+		});
+
+		if (lowerName == upperName) {
+			std::cout << "해당 이름을 가진 Player가 없습니다.\n";
+		}
+		else {
+			std::cout << "\n[Name 기준 정렬 시 같은 Name Player들]\n";
+			for (auto it = lowerName; it != upperName; ++it) {
+				(*it)->show();  // 각 Player 객체의 정보를 출력
+			}
+
+			// 앞 Player
+			if (lowerName != sortedByName.begin()) {
+				std::cout << "\n[앞 Player]\n";
+				(*(lowerName - 1))->show();  // lowerName의 바로 앞 Player 정보 출력
+			}
+
+			// 뒤 Player
+			if (upperName != sortedByName.end()) {
+				std::cout << "\n[뒤 Player]\n";
+				(*upperName)->show();  // upperName이 가리키는 Player 정보 출력
+			}
+		}
 
 		/*Player를 score 기준 오름차순으로 정렬하였을 때
 		해당 score 포함 앞과 뒤 Player의 정보를 출력한다.
 		같은 score가 여럿일 경우 바로 앞뒤 한명의 Player 정보만 출력하면 된다.*/
-		std::println("Player를 score 기준 오름차순으로 정렬하였을 때\n");
+		std::cout << "Player를 score 기준 오름차순으로 정렬하였을 때\n";
+
+		auto lowerScore = std::lower_bound(sortedByScore.begin(), sortedByScore.end(), inputId,
+			[](const Player* p, size_t id) {
+			return p->getScore() < id;  // 점수 기준으로 비교
+		});
+
+		auto upperScore = std::upper_bound(sortedByScore.begin(), sortedByScore.end(), inputId,
+			[](size_t id, const Player* p) {
+			return id < p->getScore();  // 점수 기준으로 비교
+		});
+
+		if (lowerScore == upperScore) {
+			std::cout << "해당 점수를 가진 Player가 없습니다.\n";
+		}
+		else {
+			std::cout << "\n[Score 기준 정렬 시 같은 Score Player들]\n";
+			for (auto it = lowerScore; it != upperScore; ++it) {
+				(*it)->show();  // 각 Player 객체의 정보를 출력
+			}
+
+			// 앞 Player
+			if (lowerScore != sortedByScore.begin()) {
+				std::cout << "\n[앞 Player]\n";
+				(*(lowerScore - 1))->show();  // lowerScore의 바로 앞 Player 정보 출력
+			}
+
+			// 뒤 Player
+			if (upperScore != sortedByScore.end()) {
+				std::cout << "\n[뒤 Player]\n";
+				(*upperScore)->show();  // upperScore가 가리키는 Player 정보 출력
+			}
+		}
 	}
 }

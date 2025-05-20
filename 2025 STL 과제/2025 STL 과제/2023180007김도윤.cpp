@@ -75,6 +75,8 @@ int main()
 	/*1. 파일에 저장한 모든 Player 정보를 읽어 컨테이너에 저장하라.
 		제일 마지막 Player의 정보를 다음과 같은 형식으로 화면에 출력하라.*/
 	{
+		std::cout << "[문제 1]" << std::endl;
+
 		for (Player& player : players) {
 			player.read(in);
 		}
@@ -85,6 +87,8 @@ int main()
 	
 	/*2. 점수가 가장 큰 Player를 찾아 화면에 출력하라.*/
 	{
+		std::cout << "[문제 2]" << std::endl;
+
 		std::cout << "점수가 가장 큰 Player를 찾아 화면에 출력\n";
 		(*std::max_element(players.begin(), players.end(), [](const Player& p1, const Player& p2) {
 			return p1.getScore() < p2.getScore();
@@ -100,7 +104,9 @@ int main()
 	/*3. id가 서로 같은 객체를 찾아 "같은아이디.txt"에 기록하라.
 		id가 같은 객체는 모두 몇 개인지 화면에 출력하라.
 		파일에는 id가 같은 Player 객체의 이름과 아이디를 한 줄 씩 기록한다.*/
-	/*std::unordered_map<size_t, std::vector<const Player*>> idMap;
+	std::cout << "\n[문제 3]" << std::endl;
+
+	std::unordered_map<size_t, std::vector<const Player*>> idMap;
 
 	for (const Player& player : players) {
 		idMap[player.getId()].push_back(&player);
@@ -117,30 +123,33 @@ int main()
 			}
 		}
 	}
-	std::cout << "\nid가 중복된 Player는 총 " << count << "명입니다.\n";*/
+	std::cout << "id가 중복된 Player는 총 " << count << "명입니다.\n" << std::endl;
 
 	/*4. Player의 멤버 p가 가리키는 메모리에는 파일에서 읽은 num개의 char가
 		저장되어 있어야 한다
 		메모리에 저장된 char를 오름차순으로 정렬하라.
 		'a'가 10글자 이상인 Player의 개수를 화면에 출력하라.*/
 	{
-		//int a10PlayerCount{};
+		std::cout << "[문제 4]" << std::endl;
 
-		//for (Player& p : players) {
-		//	std::sort(p.getP(), p.getP() + p.getNum());
+		int a10playercount{};
 
-		//	// a 개수 세기
-		//	int aCount = std::count(p.getP(), p.getP() + p.getNum(), 'a');
-		//	if (aCount >= 10) {
-		//		++a10PlayerCount;
-		//	}
-		//}
+		for (Player& p : players) {
+			std::sort(p.getP(), p.getP() + p.getNum());
 
-		//std::cout << "\n'a'가 10개 이상인 Player는 " << a10PlayerCount << "명입니다.\n";
+			// a 개수 세기
+			int acount = std::count(p.getP(), p.getP() + p.getNum(), 'a');
+			if (acount >= 10) {
+				++a10playercount;
+			}
+		}
+
+		std::cout << "'a'가 10개 이상인 player는 " << a10playercount << "명입니다.\n" << std::endl;
 	}
 
 
 	// 5. [ LOOP ] id를 입력받아 존재하는 id라면 다음 내용을 한 번에 화면 출력하라.
+	std::cout << "[문제 5]" << std::endl;
 	for (size_t i = 0; i < players.size(); ++i) {
 		sortedById[i] = &players[i];
 		sortedByName[i] = &players[i];
@@ -160,7 +169,7 @@ int main()
 	});
 
 	while (true) {
-		std::cout << "\n확인할 id를 입력하세요 (종료는 0): ";
+		std::cout << "확인할 id를 입력하세요 (종료는 0): ";
 		size_t inputId;
 		std::cin >> inputId;
 
@@ -186,6 +195,9 @@ int main()
 			continue;
 		}
 
+		std::string Name = (*lower)->getName();
+		int Score = (*lower)->getScore();
+
 		std::cout << "\n[ID 기준 정렬 시 같은 ID Player들]\n";
 		for (auto it = lower; it != upper; ++it) {
 			(*it)->show();  // 각 Player 객체의 정보를 출력
@@ -207,15 +219,15 @@ int main()
 		해당 name 포함 앞과 뒤 Player의 정보를 출력한다.
 		같은 name이 여럿일 경우 바로 앞뒤 한명의 Player 정보만 출력하면 된다.*/
 		std::cout << "Player를 name 기준 오름차순으로 정렬하였을 때\n";
-		
-		auto lowerName = std::lower_bound(sortedByName.begin(), sortedByName.end(), inputId,
-			[](const Player* p, size_t id) {
-			return p->getName() < id;  // 이름 기준으로 비교
+
+		auto lowerName = std::lower_bound(sortedByName.begin(), sortedByName.end(), Name,
+			[](const Player* p, const std::string& name) {
+			return p->getName() < name;
 		});
 
-		auto upperName = std::upper_bound(sortedByName.begin(), sortedByName.end(), inputId,
-			[](size_t id, const Player* p) {
-			return id < p->getName();  // 이름 기준으로 비교
+		auto upperName = std::upper_bound(sortedByName.begin(), sortedByName.end(), Name,
+			[](const std::string& name, const Player* p) {
+			return name < p->getName();
 		});
 
 		if (lowerName == upperName) {
@@ -245,14 +257,14 @@ int main()
 		같은 score가 여럿일 경우 바로 앞뒤 한명의 Player 정보만 출력하면 된다.*/
 		std::cout << "Player를 score 기준 오름차순으로 정렬하였을 때\n";
 
-		auto lowerScore = std::lower_bound(sortedByScore.begin(), sortedByScore.end(), inputId,
-			[](const Player* p, size_t id) {
-			return p->getScore() < id;  // 점수 기준으로 비교
+		auto lowerScore = std::lower_bound(sortedByScore.begin(), sortedByScore.end(), Score,
+			[](const Player* p, int score) {
+			return p->getScore() < score;  // 점수 기준으로 비교
 		});
 
-		auto upperScore = std::upper_bound(sortedByScore.begin(), sortedByScore.end(), inputId,
-			[](size_t id, const Player* p) {
-			return id < p->getScore();  // 점수 기준으로 비교
+		auto upperScore = std::upper_bound(sortedByScore.begin(), sortedByScore.end(), Score,
+			[](int score, const Player* p) {
+			return score < p->getScore();  // 점수 기준으로 비교
 		});
 
 		if (lowerScore == upperScore) {
